@@ -1,3 +1,8 @@
+variable "commit_hash" {
+  description = "Hash du commit Git actuel"
+  type        = string
+}
+
 provider "aws" {
   region                      = "us-east-1"
   access_key                  = "test"
@@ -10,18 +15,16 @@ provider "aws" {
   }
 }
 
-# Génère un identifiant unique basé sur le hash du commit Git
 locals {
-  commit_hash = trimspace(file(".git/refs/heads/main")) # Remplace "main" par ta branche si nécessaire
-  unique_ami   = "ami-${substr(local.commit_hash, 0, 8)}" # Utilise les 8 premiers caractères du hash
+  unique_ami = "ami-${substr(var.commit_hash, 0, 8)}"
 }
 
 resource "aws_instance" "demo" {
   ami           = local.unique_ami
   instance_type = "t2.micro"
   tags = {
-    Name        = "Instance-GitCommit-${local.commit_hash}"
-    CommitHash  = local.commit_hash
+    Name       = "Instance-GitCommit-${var.commit_hash}"
+    CommitHash = var.commit_hash
   }
 }
 
